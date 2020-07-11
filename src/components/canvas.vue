@@ -14,9 +14,8 @@
                     </b-form-invalid-feedback>
                 </div>
                 <b-nav-item href="#" @click="clickCircle">Add Node </b-nav-item>
-                <b-nav-item href="#" @click="addLine" :disabled="circles.length<2">Connect Node</b-nav-item>
+                <b-nav-item href="#" @click="addLine" :disabled="circles.length<2">Add Edge</b-nav-item>
                 <b-nav-item href="#" @click="clearGraph">Clear Graph</b-nav-item>
-                <!-- <b-nav-item href="#" @click="showAdjacencyList"> Show List </b-nav-item> -->
                 <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2">DFS Rec</b-nav-item>
                 <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2">DFS Stack</b-nav-item>
                  <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2">BFS</b-nav-item>
@@ -51,7 +50,18 @@
             </v-group>
         </v-layer>
     </v-stage>
-    <b-container>
+    <b-container class="center">
+        
+                <h4>Adjacency List:</h4>
+                <b-list-group v-for="(values, keys) in resAdjacencyList" :key="keys" horizontal>
+                    <b-list-group-item>Vertex: {{values[0]}}  </b-list-group-item>
+                    <span v-for="(nodes) in getNodes(values[0])"  :key="'C' +nodes"> 
+                        <b-list-group-item variant="dark">{{nodes}}</b-list-group-item>
+                    </span>
+                </b-list-group>
+            
+    </b-container>
+    <b-container class="center">
         <b-row>
             <b-col>
                 <b-list-group v-for="res in resRecDfs" :key="res">
@@ -107,10 +117,24 @@ export default {
             stackDfsStartNode: null,
             showBfsInput:null,
             startBfsStartNode:null,
-            startBfsNodeState: null
+            startBfsNodeState: null,
+            resAdjacencyList: null
         }
     },
+    mounted(){
+        Konva.stages[0].getContainer().style.border = 'solid';
+    },
     methods:{
+         getNodes(key){
+            let list = this.graph.getAdjacencyList();
+            let nodes = list.get(key);
+            let res = [];
+            while(nodes){
+                res.push(nodes.val);
+                nodes = nodes.next;
+            }
+            return res;
+        },
         showInputBox(){
             this.showInput = true;
             this.showBfsInput = false;
@@ -132,11 +156,11 @@ export default {
                             Konva.stages[0].children[0].draw();
                         }
                     }
+                   
                 }
             }
         },
         async runBfs(){
-            console.log("BFS", this.startBfsStartNode);
             this.resBfs = [];
             if(!this.startBfsStartNode || !this.nodes.includes(this.startBfsStartNode)){
                 this.startBfsNodeState = false;
@@ -250,17 +274,14 @@ export default {
             this.resRecDfs = [];
             this.resStackDfs = [];
             this.resBfs = [];
-
+            this.resAdjacencyList = null;
         },
         handleMouseDown(e) {
-           
-            console.log("SRC",e.target.parent.children[1].getAttr('text'));
             this.src = e.target.parent.children[1].getAttr('text');
             if(this.groupConfig.draggable){
                 return;
             }
             const onCircle = e.target instanceof Konva.Circle;
-            console.log("Circle", onCircle);
             if (!onCircle) {
                 return;
             }
@@ -304,13 +325,14 @@ export default {
             e.target.x(),
             e.target.y()
             ];
+            this.resAdjacencyList = this.graph.getAdjacencyList();
         }
     }
 }
 </script>
 <style>
 .center{
-    float: left;
+    margin-top: 10px;
 }
 
 </style>
