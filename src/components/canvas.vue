@@ -13,7 +13,7 @@
                         Need a number or node exists with the number
                     </b-form-invalid-feedback>
                 </div>
-                <b-nav-item href="#" @click="clickCircle">Add Node </b-nav-item>
+                <b-nav-item href="#" @click="clickCircle" >Add Node </b-nav-item>
                 <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1">Remove Node</b-nav-item>
                 <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1">Move Node</b-nav-item>
                 <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2">Add Edge</b-nav-item>
@@ -123,7 +123,7 @@ export default {
             componentKey: 0,
             deleteNode: null,
             deleteEdge:null,
-            changeLine : []
+            changeLine : [],
         }
     },
     mounted(){
@@ -191,7 +191,6 @@ export default {
                 return;
             }
             this.showBfsInput = false;
-            // this.startBfsStartNode = null;
             this.startBfsNodeState = null;
             let dis = [];
             let list = this.graph.getAdjacencyList();
@@ -201,6 +200,7 @@ export default {
             let queue = new Queue();
             queue.enQ(this.startBfsStartNode);
             dis[this.startBfsStartNode] = true;
+            this.startBfsStartNode = null;
             while(!queue.isQueueEmpty()){
                 let v = queue.deQ();
                 let temp = list.get(v);
@@ -253,9 +253,6 @@ export default {
             this.resRecDfs = this.graph.getResult();
             this.showResult(this.resRecDfs);
         },
-        showAdjacencyList(){
-            console.log(this.graph.displayGraph());
-        },
         dragMove(e){
             console.log("Pointer position", e.target.getStage().getPointerPosition());
             console.log("Start", e.target.x(), e.target.y());
@@ -267,7 +264,6 @@ export default {
             */
             e.target.children[0].attrs.x = pos.x;
             e.target.children[0].attrs.y = pos.y;
-            console.log(e.target.children[0].x(), e.target.children[0].y());
         },
         clickCircle(){
             if(!this.node || this.nodes.includes(this.node)){
@@ -375,7 +371,6 @@ export default {
         },
         handleMouseUp(e) {
             if(!this.deleteNode && !this.deleteEdge){
-                console.log("DEST",e.target.parent.children[1].getAttr('text'));
                 if(this.src != e.target.parent.children[1].getAttr('text')){
                     this.graph.addEdge(this.src, e.target.parent.children[1].getAttr('text'));
                     this.src = null;
