@@ -14,7 +14,10 @@
                     </b-form-invalid-feedback>
                 </div>
                 <b-nav-item href="#" @click="clickCircle">Add Node </b-nav-item>
-                <b-nav-item href="#" @click="addLine" :disabled="circles.length<2">Add Edge</b-nav-item>
+                <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1">Remove Node</b-nav-item>
+                <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1">Move Node</b-nav-item>
+                <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2">Add Edge</b-nav-item>
+                <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1">Remove Edge</b-nav-item>
                 <b-nav-item href="#" @click="clearGraph">Clear Graph</b-nav-item>
                 <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2">DFS Rec</b-nav-item>
                 <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2">DFS Stack</b-nav-item>
@@ -43,27 +46,25 @@
    
     <v-stage :config="configKonva" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @mousemove="handleMouseMove" @dragstart="dragMove" @dragend="dragEnd"> 
         <v-layer> 
-            <v-line v-for="line in connections" :key="line.id" :config="{ stroke: 'black', points: line.points}"/>
+            <v-line v-for="line in connections" :key="line.id" :config="{ stroke: 'black', points: line.points}" @mouseover="handleMouseOver" @mouseleave="handleMouseLeave"/>
             <v-group v-for="circle in circles" :key="circle.id" :config="groupConfig">
                 <v-circle  :config="{x:circle.x, y:circle.y, fill:'white',radius: 30, stroke:'black' }"> </v-circle>
                 <v-text  :config="{x:circle.x - 6, y: circle.y -4, text: circle.text}"> </v-text>
             </v-group>
         </v-layer>
     </v-stage>
-    <b-container class="center">
-        
+    <b-container class="center" fluid="true">
+        <b-row>
+            <b-col class="w-50">
                 <h4>Adjacency List:</h4>
-                <b-list-group v-for="(values, keys) in resAdjacencyList" :key="keys" horizontal>
-                    <b-list-group-item>Vertex: {{values[0]}}  </b-list-group-item>
+                <b-list-group v-for="(values, keys) in graph.getAdjacencyList()" :key="componentKey + keys" horizontal>
+                    <b-list-group-item>V:{{values[0]}}  </b-list-group-item>
                     <span v-for="(nodes) in getNodes(values[0])"  :key="'C' +nodes"> 
                         <b-list-group-item variant="dark">{{nodes}}</b-list-group-item>
                     </span>
                 </b-list-group>
-            
-    </b-container>
-    <b-container class="center">
-        <b-row>
-            <b-col>
+            </b-col>
+            <b-col >
                 <b-list-group v-for="res in resRecDfs" :key="res">
                     <b-list-group-item variant="dark"> DFS Recurrsive: {{res}}</b-list-group-item>
                 </b-list-group>
@@ -73,7 +74,7 @@
                     <b-list-group-item variant="dark"> DFS using stack: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
-            <b-col>
+            <b-col >
                 <b-list-group v-for="res in resBfs" :key="'B' + res">
                     <b-list-group-item variant="dark"> BFS: {{res}}</b-list-group-item>
                 </b-list-group>
@@ -85,6 +86,7 @@
 
 <script>
 import Konva from "konva";
+import lodash from 'lodash';
 import {Graph} from "../../algorithm/Graph";
 import {Stack} from "../../algorithm/Stack";
 import {Queue} from "../../algorithm/Queue";
@@ -118,14 +120,36 @@ export default {
             showBfsInput:null,
             startBfsStartNode:null,
             startBfsNodeState: null,
-            resAdjacencyList: null
+            componentKey: 0,
+            deleteNode: null,
+            deleteEdge:null,
+            changeLine : []
         }
     },
     mounted(){
         Konva.stages[0].getContainer().style.border = 'solid';
     },
     methods:{
-         getNodes(key){
+        forceUpdate(){
+            this.componentKey += 1;
+        },
+        removeEdge(){
+            this.groupConfig.draggable = false;
+            this.deleteNode = false; 
+            this.deleteEdge = true;
+        },
+        removeNode(){
+           this.groupConfig.draggable = false;
+           this.deleteNode = true; 
+           this.deleteEdge = false;
+        },
+        moveNode(){
+            this.groupConfig.draggable = true;
+            this.deleteNode = false;
+            this.deleteEdge = false;
+        },
+        getNodes(key){
+            
             let list = this.graph.getAdjacencyList();
             let nodes = list.get(key);
             let res = [];
@@ -238,15 +262,12 @@ export default {
         },
         dragEnd(e){
             const pos = e.target.getStage().getPointerPosition();
-           
             /**
              * Update the children of the group
             */
             e.target.children[0].attrs.x = pos.x;
             e.target.children[0].attrs.y = pos.y;
-      
             console.log(e.target.children[0].x(), e.target.children[0].y());
-            
         },
         clickCircle(){
             if(!this.node || this.nodes.includes(this.node)){
@@ -261,10 +282,14 @@ export default {
             let y = (window.innerHeight -300) * Math.random();
             this.circles.push({x: x, y: y, id: Date.now(), text: this.node});
             this.node='';
+            this.deleteNode = false;
+            this.deleteEdge = false;
         },
 
-        addLine(){
+        addEdge(){
             this.groupConfig.draggable = false;
+            this.deleteNode = false;
+            this.deleteEdge = false;
         },
         clearGraph(){
             this.circles = [];
@@ -274,22 +299,67 @@ export default {
             this.resRecDfs = [];
             this.resStackDfs = [];
             this.resBfs = [];
-            this.resAdjacencyList = null;
+            this.deleteNode = null;
+            this.deleteEdge = null;
         },
         handleMouseDown(e) {
-            this.src = e.target.parent.children[1].getAttr('text');
-            if(this.groupConfig.draggable){
-                return;
+            if(this.deleteNode){
+                let nodeText =   e.target.parent.children[1].getAttr('text');                  
+                this.circles = lodash.filter(this.circles,function(cir) {
+                    if(cir.text !=nodeText){
+                        return cir;
+                    }
+                })
+                this.nodes = lodash.filter(this.nodes, function(nod){
+                    if(nod != nodeText){
+                        return nod;
+                    }
+                })
+                this.graph.removeNode(nodeText);
+                this.graph.updateAdjacencyList(nodeText);
+            }   
+            else if(this.deleteEdge){
+                let points = e.target.getAttr('points');
+                let x1 = points[0];
+                let y1 = points[1];
+
+                let x2 = points[2];
+                let y2 = points[3];
+                let nodes = [];
+                let shapes = Konva.stages[0].children[0].children;
+                for(let i =0; i<shapes.length; i++){
+                    if(shapes[i] instanceof Konva.Group){
+                        if((shapes[i].children[0].getAttr('x') == x1 && shapes[i].children[0].getAttr('y') == y1) || (
+                            shapes[i].children[0].getAttr('x') == x2 && shapes[i].children[0].getAttr('y') == y2)){    
+                            nodes.push(shapes[i].children[1].getAttr('text'));
+                        }
+                    }
+                }
+                this.connections = lodash.filter(this.connections,(line) => {
+                    if(!lodash.isEqual(line.points,points)){
+                        return line;
+                    }
+                })
+               
+                this.graph.update(nodes[0], nodes[1]);
+                this.graph.update(nodes[1], nodes[0]);
+                this.forceUpdate();
             }
-            const onCircle = e.target instanceof Konva.Circle;
-            if (!onCircle) {
-                return;
+            else{
+                this.src = e.target.parent.children[1].getAttr('text');
+                if(this.groupConfig.draggable){
+                    return;
+                }
+                const onCircle = e.target instanceof Konva.Circle;
+                if (!onCircle) {
+                    return;
+                }
+                this.drawningLine = true;
+                this.connections.push({
+                    id: Date.now(),
+                    points: [e.target.x(), e.target.y()]
+                });
             }
-            this.drawningLine = true;
-            this.connections.push({
-                id: Date.now(),
-                points: [e.target.x(), e.target.y()]
-            });
         },
         handleMouseMove(e) {
             if(this.groupConfig.draggable){
@@ -304,28 +374,48 @@ export default {
             lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
         },
         handleMouseUp(e) {
-            console.log("DEST",e.target.parent.children[1].getAttr('text'));
-            if(this.src != e.target.parent.children[1].getAttr('text')){
-                this.graph.addEdge(this.src, e.target.parent.children[1].getAttr('text'));
-                this.src = null;
+            if(!this.deleteNode && !this.deleteEdge){
+                console.log("DEST",e.target.parent.children[1].getAttr('text'));
+                if(this.src != e.target.parent.children[1].getAttr('text')){
+                    this.graph.addEdge(this.src, e.target.parent.children[1].getAttr('text'));
+                    this.src = null;
+                }
+            
+                if(this.groupConfig.draggable){
+                    return;
+                }
+                const onCircle = e.target instanceof Konva.Circle;
+                if (!onCircle) {
+                    return;
+                }
+                this.drawningLine = false;
+                const lastLine = this.connections[this.connections.length - 1];
+                lastLine.points = [
+                lastLine.points[0],
+                lastLine.points[1],
+                e.target.x(),
+                e.target.y()
+                ];
+            }
+        },
+        handleMouseOver(e){
+            if(e.target instanceof Konva.Line && this.deleteEdge){
+                Konva.stages[0].getContainer().style.cursor = 'pointer';
+                e.target.setAttr('stroke','red');
+                e.target.setAttr('strokeWidth',10);
+                this.changeLine.push(e.target);
+                Konva.stages[0].children[0].draw();
             }
             
-            if(this.groupConfig.draggable){
-                return;
-            }
-            const onCircle = e.target instanceof Konva.Circle;
-            if (!onCircle) {
-                return;
-            }
-            this.drawningLine = false;
-            const lastLine = this.connections[this.connections.length - 1];
-            lastLine.points = [
-            lastLine.points[0],
-            lastLine.points[1],
-            e.target.x(),
-            e.target.y()
-            ];
-            this.resAdjacencyList = this.graph.getAdjacencyList();
+        },
+        handleMouseLeave(){
+            this.changeLine.forEach((line) => {
+                line.setAttr('stroke','black');
+                line.setAttr('strokeWidth',2);
+                Konva.stages[0].getContainer().style.cursor = 'default';
+                Konva.stages[0].children[0].draw();
+            })
+            this.changeLine = [];
         }
     }
 }

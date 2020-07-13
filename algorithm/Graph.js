@@ -17,7 +17,6 @@ export class Graph{
             }
         })
     }
-
     addEdge(src, dest){
         let srcTemp = this.adjacencyList.get(src);
         let srcCheck = null;
@@ -36,7 +35,6 @@ export class Graph{
             if(!srcCheck){
                 srcTemp.next = new Node(dest);
             }
-           
         }
         
         let destTemp = this.adjacencyList.get(dest);
@@ -92,5 +90,44 @@ export class Graph{
     }
     getAdjacencyList(){
         return this.adjacencyList;
+    }
+    removeNode(node){
+        this.adjacencyList.delete(node);
+    }
+
+    update(node, key){
+        let head = this.adjacencyList.get(key);
+        console.log("Head ", head,"key", key);
+        if(head){
+            if(head.val == node){
+                if(!head.next){
+                    head = null;
+                }
+                else{
+                    head = head.next;  
+                }
+                this.adjacencyList.set(key,head);
+            }
+            else{
+                let copy = head;
+                let prev = null;
+                while(head){
+                    if(head.val == node){
+                        prev.next = head.next;
+                        this.adjacencyList.set(key, copy);
+                    }
+                    prev = head;
+                    head = head.next;
+                }
+            } 
+        }
+    }
+    updateAdjacencyList(node){
+        for(let key of this.adjacencyList.keys()){
+            this.update(node, key);
+        } 
+    }
+    setList(list){
+        this.adjacencyList = list;
     }
  }
