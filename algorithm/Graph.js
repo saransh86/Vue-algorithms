@@ -18,6 +18,9 @@ export class Graph{
         })
     }
     addEdge(src, dest){
+        if((src == undefined) || (src == '') || (dest==undefined) || (dest=='')){
+            return;
+        }
         let srcTemp = this.adjacencyList.get(src);
         let srcCheck = null;
         let destCheck = null;
@@ -27,12 +30,13 @@ export class Graph{
         else{
             while(srcTemp.next){
                 if(dest == srcTemp.val){
+                    
                     srcCheck = true;
                     break;
                 }
                 srcTemp = srcTemp.next;
             }
-            if(!srcCheck){
+            if(!srcCheck && (dest != srcTemp.val)){
                 srcTemp.next = new Node(dest);
             }
         }
@@ -43,13 +47,13 @@ export class Graph{
         }
         else{
             while(destTemp.next){
-                if(destCheck == destTemp.val){
+                if(src == destTemp.val){
                     destCheck = true;
                     break;
                 }
                 destTemp = destTemp.next;
             }
-            if(!destCheck){
+            if(!destCheck && (src!= destTemp.val)){
                 destTemp.next = new Node(src);
             }
             
@@ -59,7 +63,6 @@ export class Graph{
         
         dis[v] = true;
         let temp = this.adjacencyList.get(v);
-        console.log("DFS:", v);
         this.result.push(v);
         while(temp){
             if(!dis[temp.val]){
@@ -97,7 +100,6 @@ export class Graph{
 
     update(node, key){
         let head = this.adjacencyList.get(key);
-        console.log("Head ", head,"key", key);
         if(head){
             if(head.val == node){
                 if(!head.next){

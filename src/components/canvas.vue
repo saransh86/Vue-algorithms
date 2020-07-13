@@ -13,7 +13,7 @@
                         Need a number or node exists with the number
                     </b-form-invalid-feedback>
                 </div>
-                <b-nav-item href="#" @click="clickCircle" >Add Node </b-nav-item>
+                <b-nav-item href="#" @click="clickCircle">Add Node </b-nav-item>
                 <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1">Remove Node</b-nav-item>
                 <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1">Move Node</b-nav-item>
                 <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2">Add Edge</b-nav-item>
@@ -23,23 +23,19 @@
                 <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2">DFS Stack</b-nav-item>
                  <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2">BFS</b-nav-item>
                 <div :hidden="!showInput">
-                    <b-nav-form>
                     <b-form-input v-model="stackDfsStartNode" placeholder="Enter the DFS start node" :state="startNodeState" > </b-form-input>
-                    <b-button variant="dark" class="my-2 my-sm-0" @click="runStackDfs">Run</b-button>
+                    <b-form-invalid-feedback id="input-live-feedback">
+                        Need a node number or number not in nodes
+                    </b-form-invalid-feedback>               
+                </div>
+                 <b-nav-item variant="dark" @click="runStackDfs" :hidden="!showInput">Run</b-nav-item>
+                <div :hidden="!showBfsInput">
+                    <b-form-input v-model="startBfsStartNode" placeholder="Enter the BFS start node" :state="startBfsNodeState" > </b-form-input>
                     <b-form-invalid-feedback id="input-live-feedback">
                         Need a node number or number not in nodes
                     </b-form-invalid-feedback>
-                    </b-nav-form>
                 </div>
-                <div :hidden="!showBfsInput">
-                    <b-nav-form>
-                        <b-form-input v-model="startBfsStartNode" placeholder="Enter the BFS start node" :state="startBfsNodeState" > </b-form-input>
-                        <b-button variant="dark" class="my-2 my-sm-0" @click="runBfs">Run</b-button>
-                        <b-form-invalid-feedback id="input-live-feedback">
-                            Need a node number or number not in nodes
-                        </b-form-invalid-feedback>
-                    </b-nav-form>
-                </div>
+                <b-nav-item variant="dark" @click="runBfs" :hidden="!showBfsInput">Run</b-nav-item>
             </b-navbar-nav>
         </b-collapse>
     </b-navbar>
@@ -123,7 +119,7 @@ export default {
             componentKey: 0,
             deleteNode: null,
             deleteEdge:null,
-            changeLine : [],
+            changeLine : []
         }
     },
     mounted(){
@@ -220,6 +216,7 @@ export default {
         async runStackDfs(){
             this.resStackDfs = [];
             if(!this.stackDfsStartNode || !this.nodes.includes(this.stackDfsStartNode)){
+                console.log("Click!")
                 this.startNodeState = false;
                 return;
             }
@@ -371,8 +368,9 @@ export default {
         },
         handleMouseUp(e) {
             if(!this.deleteNode && !this.deleteEdge){
-                if(this.src != e.target.parent.children[1].getAttr('text')){
-                    this.graph.addEdge(this.src, e.target.parent.children[1].getAttr('text'));
+                let dest = e.target.parent.children[1].getAttr('text');
+                if((this.src != dest) && (dest != '') && (dest != undefined ) && (this.src != undefined)) {
+                    this.graph.addEdge(this.src, dest);
                     this.src = null;
                 }
             
