@@ -1,6 +1,7 @@
 <template>
   <div>
-    <b-navbar toggleable="sm" type="dark" variant="dark">
+    <b-navbar toggleable="lg" type="dark" variant="dark">
+        <b-navbar-nav>
         <b-navbar-brand href="#">Create Graph</b-navbar-brand>
 
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -21,7 +22,8 @@
                 <b-nav-item href="#" @click="clearGraph">Clear Graph</b-nav-item>
                 <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2">DFS Rec</b-nav-item>
                 <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2">DFS Stack</b-nav-item>
-                 <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2">BFS</b-nav-item>
+                <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2">BFS</b-nav-item>
+                <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2">Shortest Path</b-nav-item>
                 <div :hidden="!showInput">
                     <b-form-input v-model="stackDfsStartNode" placeholder="Enter the DFS start node" :state="startNodeState" > </b-form-input>
                     <b-form-invalid-feedback id="input-live-feedback">
@@ -36,8 +38,20 @@
                     </b-form-invalid-feedback>
                 </div>
                 <b-nav-item variant="dark" @click="runBfs" :hidden="!showBfsInput">Run</b-nav-item>
+                <div :hidden="!showShortestPath">
+                    <b-form-input v-model="startNode" placeholder="Enter start node" :state="startState" > </b-form-input>
+                    <b-form-invalid-feedback id="input-live-feedback">
+                        Need a node number or number not in nodes
+                    </b-form-invalid-feedback>
+                    <b-form-input v-model="destNode" placeholder="Enter destination node" :state="destState" > </b-form-input>
+                     <b-form-invalid-feedback id="input-live-feedback">
+                        Need a node number or number not in nodes
+                    </b-form-invalid-feedback>
+                </div>
+                <b-nav-item variant="dark" @click="runShortestPath" :hidden="!showShortestPath">Run</b-nav-item>
             </b-navbar-nav>
         </b-collapse>
+        </b-navbar-nav>
     </b-navbar>
    
     <v-stage :config="configKonva" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @mousemove="handleMouseMove" @dragstart="dragMove" @dragend="dragEnd"> 
@@ -62,17 +76,22 @@
             </b-col>
             <b-col >
                 <b-list-group v-for="res in resRecDfs" :key="res">
-                    <b-list-group-item variant="dark"> DFS Recurrsive: {{res}}</b-list-group-item>
+                    <b-list-group-item variant="dark"> DFS Recursive: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
             <b-col>
                 <b-list-group v-for="res in resStackDfs" :key="'A' + res">
-                    <b-list-group-item variant="dark"> DFS using stack: {{res}}</b-list-group-item>
+                    <b-list-group-item variant="dark"> DFS Stack: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
             <b-col >
                 <b-list-group v-for="res in resBfs" :key="'B' + res">
                     <b-list-group-item variant="dark"> BFS: {{res}}</b-list-group-item>
+                </b-list-group>
+            </b-col>
+            <b-col >
+                <b-list-group v-for="res in resShortestPath" :key="'D' + res">
+                    <b-list-group-item variant="dark"> Shortest Path: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
         </b-row>
@@ -107,7 +126,6 @@ export default {
             src: null,
             nodes: [],
             showStartNodeInput : true,
-            startNode : '',
             resRecDfs : [],
             resStackDfs: [],
             resBfs: [],
@@ -119,13 +137,22 @@ export default {
             componentKey: 0,
             deleteNode: null,
             deleteEdge:null,
-            changeLine : []
+            changeLine : [],
+            resShortestPath: [],
+            showShortestPath:null,
+            startNode : '',
+            startState:null,
+            destNode: '',
+            destState:null 
         }
     },
     mounted(){
         Konva.stages[0].getContainer().style.border = 'solid';
     },
     methods:{
+        shortestPath(){
+            this.showShortestPath = true;
+        },
         forceUpdate(){
             this.componentKey += 1;
         },
@@ -213,10 +240,54 @@ export default {
            
             this.showResult(this.resBfs);
         },
+        runShortestPath(){
+            this.resShortestPath = [];
+            if((!this.startNode || !this.nodes.includes(this.startNode))){
+                this.startState = false;
+                return;
+            }
+            this.startState = null;
+            if(( !this.destNode || !this.nodes.includes(this.destNode))){
+                this.destState = false;
+                return;
+            }
+            
+            this.destState = null;
+            this.showShortestPath = false;
+            let dis = [];
+            let path = new Map();
+            let list = this.graph.getAdjacencyList();
+            for(let key of list.keys()){
+                dis[key] = false;
+            }
+            let queue = new Queue();
+            queue.enQ(this.startNode);
+            dis[this.startNode] = true;
+            
+            while(!queue.isQueueEmpty()){
+                let v = queue.deQ();
+                let temp = list.get(v);
+                while(temp){
+                    if(!dis[temp.val]){
+                        path.set(temp.val, v);
+                        dis[temp.val] = true;
+                        queue.enQ(temp.val);
+                    }
+                    temp = temp.next;
+                }
+            }
+            this.resShortestPath.push(this.startNode);
+            while(this.destNode != this.startNode){
+                this.resShortestPath.splice(1,0,this.destNode);
+                this.destNode = path.get(this.destNode);
+            }
+            this.startNode = null;
+            this.destNode = null;
+            this.showResult(this.resShortestPath);
+        },
         async runStackDfs(){
             this.resStackDfs = [];
             if(!this.stackDfsStartNode || !this.nodes.includes(this.stackDfsStartNode)){
-                console.log("Click!")
                 this.startNodeState = false;
                 return;
             }
@@ -292,6 +363,7 @@ export default {
             this.resRecDfs = [];
             this.resStackDfs = [];
             this.resBfs = [];
+            this.resShortestPath=[];
             this.deleteNode = null;
             this.deleteEdge = null;
         },
