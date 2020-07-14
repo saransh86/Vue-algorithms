@@ -64,9 +64,9 @@
         </v-layer>
     </v-stage>
     <b-container class="center" fluid="true">
-        <b-row>
-            <b-col class="w-50">
-                <h4>Adjacency List:</h4>
+        <b-row>  
+            <b-col cols="4">   
+                <span>Adjacency List:</span>
                 <b-list-group v-for="(values, keys) in graph.getAdjacencyList()" :key="componentKey + keys" horizontal>
                     <b-list-group-item>V:{{values[0]}}  </b-list-group-item>
                     <span v-for="(nodes) in getNodes(values[0])"  :key="'C' +nodes"> 
@@ -74,22 +74,22 @@
                     </span>
                 </b-list-group>
             </b-col>
-            <b-col >
+            <b-col cols="2">
                 <b-list-group v-for="res in resRecDfs" :key="res">
                     <b-list-group-item variant="dark"> DFS Recursive: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
-            <b-col>
+            <b-col cols="2">
                 <b-list-group v-for="res in resStackDfs" :key="'A' + res">
                     <b-list-group-item variant="dark"> DFS Stack: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
-            <b-col >
+            <b-col cols="2">
                 <b-list-group v-for="res in resBfs" :key="'B' + res">
                     <b-list-group-item variant="dark"> BFS: {{res}}</b-list-group-item>
                 </b-list-group>
             </b-col>
-            <b-col >
+            <b-col cols="2">
                 <b-list-group v-for="res in resShortestPath" :key="'D' + res">
                     <b-list-group-item variant="dark"> Shortest Path: {{res}}</b-list-group-item>
                 </b-list-group>
