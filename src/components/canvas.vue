@@ -143,7 +143,8 @@ export default {
             startNode : '',
             startState:null,
             destNode: '',
-            destState:null 
+            destState:null,
+            updateCoordinates: []
         }
     },
     mounted(){
@@ -322,8 +323,8 @@ export default {
             this.showResult(this.resRecDfs);
         },
         dragMove(e){
-            console.log("Pointer position", e.target.getStage().getPointerPosition());
-            console.log("Start", e.target.x(), e.target.y());
+            this.updateCoordinates[0] = e.target.children[0].attrs.x;
+            this.updateCoordinates[1] = e.target.children[0].attrs.y;
         },
         dragEnd(e){
             const pos = e.target.getStage().getPointerPosition();
@@ -332,6 +333,23 @@ export default {
             */
             e.target.children[0].attrs.x = pos.x;
             e.target.children[0].attrs.y = pos.y;
+            for(let i=0; i<this.connections.length;i++){
+                if((this.connections[i].points[0] == this.updateCoordinates[0]) && (this.connections[i].points[1] == this.updateCoordinates[1])){
+                        this.connections[i].points[0] = pos.x;
+                        this.connections[i].points[1] = pos.y;
+                        this.connections[i].id += 1;
+                        
+                }
+                else if((this.connections[i].points[2] == this.updateCoordinates[0]) && (this.connections[i].points[3] == this.updateCoordinates[1])){
+                        this.connections[i].points[2] = pos.x;
+                        this.connections[i].points[3] = pos.y;
+                        this.connections[i].id += 1;
+                }
+                else{
+                    console.log("Not found!");
+                }
+                
+            }
         },
         clickCircle(){
             if(!this.node || this.nodes.includes(this.node)){
