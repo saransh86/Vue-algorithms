@@ -2,7 +2,7 @@
   <div>
     <b-navbar toggleable="lg" type="dark" variant="dark">
         <b-navbar-nav>
-        <b-navbar-brand href="#">Create Graph</b-navbar-brand>
+        <b-navbar-brand href="#">Simple Graph</b-navbar-brand>
 
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -63,10 +63,10 @@
             </v-group>
         </v-layer>
     </v-stage>
+    <span :hidden="!graph.getAdjacencyList().size" class="list"> <b>Adjacency List: </b></span>
     <b-container class="center" fluid="true">
         <b-row>  
             <b-col cols="4">   
-                <span :hidden="!graph.getAdjacencyList().size"> <b>Adjacency List: </b></span>
                 <b-list-group v-for="(values, keys) in graph.getAdjacencyList()" :key="componentKey + keys" horizontal>
                     <b-list-group-item>V:{{values[0]}}  </b-list-group-item>
                     <span v-for="(nodes) in getNodes(values[0])"  :key="'C' +nodes"> 
@@ -567,7 +567,10 @@ export default {
 </script>
 <style>
 .center{
-    margin-top: 10px;
+    margin-top: 24px;
+}
+.list{
+    float:left;
 }
 
 </style>
