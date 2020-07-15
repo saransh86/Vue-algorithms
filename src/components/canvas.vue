@@ -14,16 +14,16 @@
                         Need a number or node exists with the number
                     </b-form-invalid-feedback>
                 </div>
-                <b-nav-item href="#" @click="clickCircle">Add Node </b-nav-item>
-                <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1">Remove Node</b-nav-item>
-                <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1">Move Node</b-nav-item>
-                <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2">Add Edge</b-nav-item>
-                <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1">Remove Edge</b-nav-item>
-                <b-nav-item href="#" @click="clearGraph">Clear Graph</b-nav-item>
-                <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2">DFS Rec</b-nav-item>
-                <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2">DFS Stack</b-nav-item>
-                <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2">BFS</b-nav-item>
-                <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2">Shortest Path</b-nav-item>
+                <b-nav-item href="#" @click="clickCircle" v-bind:active="tab == 0">Add Node </b-nav-item>
+                <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1" v-bind:active="tab == 1">Remove Node</b-nav-item>
+                <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1" v-bind:active="tab == 2">Move Node</b-nav-item>
+                <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2" v-bind:active="tab == 3">Add Edge</b-nav-item>
+                <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1" v-bind:active="tab == 4">Remove Edge</b-nav-item>
+                <b-nav-item href="#" @click="clearGraph" >Clear Graph</b-nav-item>
+                <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2" v-bind:active="tab == 5">DFS Rec</b-nav-item>
+                <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2" v-bind:active="tab == 6">DFS Stack</b-nav-item>
+                <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2" v-bind:active="tab == 7">BFS</b-nav-item>
+                <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2" v-bind:active="tab == 8">Shortest Path</b-nav-item>
                 <div :hidden="!showInput">
                     <b-form-input v-model="stackDfsStartNode" placeholder="Enter the DFS start node" :state="startNodeState" > </b-form-input>
                     <b-form-invalid-feedback id="input-live-feedback">
@@ -66,7 +66,7 @@
     <b-container class="center" fluid="true">
         <b-row>  
             <b-col cols="4">   
-                <span>Adjacency List:</span>
+                <span :hidden="!graph.getAdjacencyList().size"> <b>Adjacency List: </b></span>
                 <b-list-group v-for="(values, keys) in graph.getAdjacencyList()" :key="componentKey + keys" horizontal>
                     <b-list-group-item>V:{{values[0]}}  </b-list-group-item>
                     <span v-for="(nodes) in getNodes(values[0])"  :key="'C' +nodes"> 
@@ -146,30 +146,36 @@ export default {
             destState:null,
             updateCoordinates: [],
             lineId: null,
-            edges: new Map()
+            edges: new Map(),
+            tab: null
         }
     },
     mounted(){
-        Konva.stages[0].getContainer().style.border = 'solid';
+        Konva.stages[0].getContainer().style.border = 'dashed black';
     },
     methods:{
         shortestPath(){
             this.showShortestPath = true;
+            this.showInput = false;
+            this.showBfsInput = false;
         },
         forceUpdate(){
             this.componentKey += 1;
         },
         removeEdge(){
+            this.tab = 4;
             this.groupConfig.draggable = false;
             this.deleteNode = false; 
             this.deleteEdge = true;
         },
         removeNode(){
-           this.groupConfig.draggable = false;
-           this.deleteNode = true; 
-           this.deleteEdge = false;
+            this.tab = 1;
+            this.groupConfig.draggable = false;
+            this.deleteNode = true; 
+            this.deleteEdge = false;
         },
         moveNode(){
+            this.tab = 2;
             this.groupConfig.draggable = true;
             this.deleteNode = false;
             this.deleteEdge = false;
@@ -188,10 +194,12 @@ export default {
         showInputBox(){
             this.showInput = true;
             this.showBfsInput = false;
+            this.showShortestPath = false;
         },
         showBfsInputBox(){
             this.showBfsInput = true;
             this.showInput = false;
+            this.showShortestPath = false;
         },
         async showResult(res){
             const children = Konva.stages[0].children[0].children;
@@ -211,6 +219,7 @@ export default {
             }
         },
         async runBfs(){
+            this.tab = 7;
             this.resBfs = [];
             if(!this.startBfsStartNode || !this.nodes.includes(this.startBfsStartNode)){
                 this.startBfsNodeState = false;
@@ -244,6 +253,7 @@ export default {
             this.showResult(this.resBfs);
         },
         runShortestPath(){
+            this.tab = 8;
             this.resShortestPath = [];
             if((!this.startNode || !this.nodes.includes(this.startNode))){
                 this.startState = false;
@@ -289,6 +299,7 @@ export default {
             this.showResult(this.resShortestPath);
         },
         async runStackDfs(){
+            this.tab = 6;
             this.resStackDfs = [];
             if(!this.stackDfsStartNode || !this.nodes.includes(this.stackDfsStartNode)){
                 this.startNodeState = false;
@@ -320,6 +331,7 @@ export default {
             this.showResult(this.resStackDfs);
         },
         async runRecDfs(){
+            this.tab = 5;
             this.graph.recursiveDfs();
             this.resRecDfs = this.graph.getResult();
             this.showResult(this.resRecDfs);
@@ -346,14 +358,11 @@ export default {
                         this.connections[i].points[2] = pos.x;
                         this.connections[i].points[3] = pos.y;
                         this.connections[i].id += 1;
-                }
-                // else{
-                //     console.log("Not found!");
-                // }
-                
+                }    
             }
         },
         clickCircle(){
+            this.tab = 0;
             if(!this.node || this.nodes.includes(this.node)){
                 this.nodeState = false;
                 return;
@@ -371,24 +380,19 @@ export default {
         },
 
         addEdge(){
+            this.tab = 3;
             this.groupConfig.draggable = false;
             this.deleteNode = false;
             this.deleteEdge = false;
         },
         clearGraph(){
-            this.circles = [];
-            this.connections = [];
-            this.nodes = [];
-            this.graph = new Graph();
-            this.resRecDfs = [];
-            this.resStackDfs = [];
-            this.resBfs = [];
-            this.resShortestPath=[];
-            this.deleteNode = null;
-            this.deleteEdge = null;
+            Object.assign(this.$data, this.$options.data());
         },
         handleMouseDown(e) {
             if(this.deleteNode){
+                if(!(e.target instanceof Konva.Circle)){
+                    return;
+                }
                 let nodeText = e.target.parent.children[1].getAttr('text');     
                 this.edges.delete(nodeText);             
                 this.circles = lodash.filter(this.circles,function(cir) {
@@ -405,6 +409,9 @@ export default {
                 this.graph.updateAdjacencyList(nodeText);
             }   
             else if(this.deleteEdge){
+                if(!(e.target instanceof Konva.Line)){
+                    return;
+                }
                 let points = e.target.getAttr('points');
                 let x1 = points[0];
                 let y1 = points[1];
@@ -435,9 +442,6 @@ export default {
                 else if(this.edges.get(nodes[1]) && this.edges.get(nodes[1]) == nodes[0]){
                     this.edges.delete(nodes[1]);
                 }
-                // else{
-                //     this.edges;
-                // }
                 this.forceUpdate();
             }
             else{
