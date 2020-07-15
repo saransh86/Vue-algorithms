@@ -144,7 +144,9 @@ export default {
             startState:null,
             destNode: '',
             destState:null,
-            updateCoordinates: []
+            updateCoordinates: [],
+            lineId: null,
+            edges: new Map()
         }
     },
     mounted(){
@@ -345,9 +347,9 @@ export default {
                         this.connections[i].points[3] = pos.y;
                         this.connections[i].id += 1;
                 }
-                else{
-                    console.log("Not found!");
-                }
+                // else{
+                //     console.log("Not found!");
+                // }
                 
             }
         },
@@ -387,7 +389,8 @@ export default {
         },
         handleMouseDown(e) {
             if(this.deleteNode){
-                let nodeText =   e.target.parent.children[1].getAttr('text');                  
+                let nodeText = e.target.parent.children[1].getAttr('text');     
+                this.edges.delete(nodeText);             
                 this.circles = lodash.filter(this.circles,function(cir) {
                     if(cir.text !=nodeText){
                         return cir;
@@ -426,9 +429,21 @@ export default {
                
                 this.graph.update(nodes[0], nodes[1]);
                 this.graph.update(nodes[1], nodes[0]);
+                if(this.edges.get(nodes[0]) && this.edges.get(nodes[0]) == nodes[1]){
+                    this.edges.delete(nodes[0]);
+                }
+                else if(this.edges.get(nodes[1]) && this.edges.get(nodes[1]) == nodes[0]){
+                    this.edges.delete(nodes[1]);
+                }
+                // else{
+                //     this.edges;
+                // }
                 this.forceUpdate();
             }
             else{
+                if(!(e.target instanceof Konva.Circle)){
+                    return;
+                }
                 this.src = e.target.parent.children[1].getAttr('text');
                 if(this.groupConfig.draggable){
                     return;
@@ -437,9 +452,11 @@ export default {
                 if (!onCircle) {
                     return;
                 }
+                let id = Date.now();
+                this.lineId = id;
                 this.drawningLine = true;
                 this.connections.push({
-                    id: Date.now(),
+                    id: id,
                     points: [e.target.x(), e.target.y()]
                 });
             }
@@ -458,28 +475,69 @@ export default {
         },
         handleMouseUp(e) {
             if(!this.deleteNode && !this.deleteEdge){
+                if(!(e.target instanceof Konva.Circle)){
+                    this.connections = lodash.filter(this.connections,(line) => {
+                        if(line.id != this.lineId){
+                            return line;
+                        }
+                    })
+
+                    this.drawningLine = false;
+                    return;
+                }
                 let dest = e.target.parent.children[1].getAttr('text');
-                if((this.src != dest) && (dest != '') && (dest != undefined ) && (this.src != undefined)) {
-                    this.graph.addEdge(this.src, dest);
-                    this.src = null;
+                
+                if( (dest != '') && (dest != undefined ) && (this.src != undefined) && (this.src != dest)) {
+                    /**
+                     * Check if the edge exists
+                    */
+                    
+                    if(this.edges.get(this.src) && this.edges.get(this.src) == dest){
+                        this.removeLine();
+                        return;
+
+                    }
+                    else if(this.edges.get(dest) && this.edges.get(dest) == this.src){
+                        this.removeLine();
+                        return;
+                    }
+                    else{
+                        this.graph.addEdge(this.src, dest);
+                        this.edges.set(this.src, dest);
+                        this.src = null;
+                        if(this.groupConfig.draggable){
+                            return;
+                        }
+                        const onCircle = e.target instanceof Konva.Circle;
+                        if (!onCircle) {
+                            return;
+                        }
+                        this.drawningLine = false;
+                        this.lineId = null;
+                        const lastLine = this.connections[this.connections.length - 1];
+                        lastLine.points = [
+                        lastLine.points[0],
+                        lastLine.points[1],
+                        e.target.x(),
+                        e.target.y()
+                        ];
+                    }
+                    
+                }
+                else{
+                    this.removeLine();
                 }
             
-                if(this.groupConfig.draggable){
-                    return;
-                }
-                const onCircle = e.target instanceof Konva.Circle;
-                if (!onCircle) {
-                    return;
-                }
-                this.drawningLine = false;
-                const lastLine = this.connections[this.connections.length - 1];
-                lastLine.points = [
-                lastLine.points[0],
-                lastLine.points[1],
-                e.target.x(),
-                e.target.y()
-                ];
+                
             }
+        },
+        removeLine(){
+            this.drawningLine = false;
+            this.connections = lodash.filter(this.connections,(line) => {
+                if(line.id != this.lineId){
+                    return line;
+                }
+            })
         },
         handleMouseOver(e){
             if(e.target instanceof Konva.Line && this.deleteEdge){
