@@ -31,66 +31,76 @@ export class BinarySearchTree{
      * Root Left right
      */
     preorder(){
+       return this._preorder([]);
+    }
+
+    _preorder(res){
         if(this){  
-            console.log(this.val);
+            res.push(this.val);
             if(this.left){
-                this.left.preorder();
+                this.left._preorder(res);
             }
             if(this.right){
-                this.right.preorder();
+                this.right._preorder(res);
             }
         }
+        return res;
     }
 
     /**
      * Left right root
      */
     postorder(){
+        return this._postorder([]);
+    }
+
+    _postorder(res){
         if(this){
             if(this.left){
-                this.left.postorder();
+                this.left._postorder(res);
             }
             if(this.right){
-                this.right.postorder();
+                this.right._postorder(res);
             }
-            console.log(this.val);
+            res.push(this.val);
         }
+        return res;
     }
 
     /**
      * Left root right
      */
     inorder(){
+        return this._inorder([]);
+    }
+
+    _inorder(res){
         if(this){
             if(this.left){
-                this.left.inorder();
+                this.left._inorder(res);
             }
-            console.log(this.val);
+            res.push(this.val);
             if(this.right){
-                this.right.inorder();
+                this.right._inorder(res);
             }
         }
+        return res;
     }
 
     getParent(val){
-       
         if(this.val > val){
             if(!this.left){
-                // console.log("Returning from the left ", this.val);
                 return [this.val, 'left'];
             }
             else{
-                // console.log("Going to the left from ", this.val);
                 return this.left.getParent(val);
             }  
         }
         else{
             if(!this.right){
-                // console.log("Returning from the right", this.val);
                 return [this.val,'right'];
             }
             else{
-                // console.log("Going to the right from ", this.val)
                 return this.right.getParent(val);
             }
             

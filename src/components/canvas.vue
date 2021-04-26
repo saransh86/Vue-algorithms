@@ -36,6 +36,10 @@
                         </b-form-invalid-feedback>
                     </div>    
                     <b-nav-item href="#" @click="addNodeToBst"> Add Node  </b-nav-item>
+                    <b-nav-item href="#" @click="inorder" :disabled="!root"> Inorder  </b-nav-item>
+                    <b-nav-item href="#" @click="preorder" :disabled="!root"> Preorder </b-nav-item>
+                    <b-nav-item href="#" @click="postorder" :disabled="!root"> Postorder</b-nav-item>
+                    <b-nav-item href="#" @click="clearGraph"> Clear Tree  </b-nav-item>
                     <b-nav-item href="#" @click="showGraphMenu">Show Graph Menu </b-nav-item>
 
                 </b-navbar-nav>
@@ -167,7 +171,8 @@ export default {
             edges: new Map(),
             tab: null,
             showBST: null,
-            root: null
+            root: null,
+            coordinates: {}
         }
     },
     mounted(){
@@ -185,53 +190,64 @@ export default {
                 let x = window.innerWidth/2;
                 let y = window.innerHeight/2-400;
                 this.circles.push({x: x, y: y, id: Date.now(), text: this.bstNode});
+                this.coordinates[val] = {x: x, y:y};
             }
             else{
                 let parent = this.root.getParent(val);
-                
                 this.root.insert(val);
-                console.log("parent", parent, this.root);
                 const children = Konva.stages[0].children[0].children;
-                console.log("All", children)
                 let x1= 0;
                 let y1 = 0;
                 for(let i=0; i<children.length;i++){
-                    console.log("Group ", children[i]);
                     for(let j=0; j<children[i].children.length; j++){
                         if(children[i].children[j] instanceof Konva.Text && children[i].children[j].attrs['text'] == parent[0]){
-                            console.log("Members: ", children[i].children[j]);
                             x1 = children[i].children[j].parent.children[0].attrs['x'];
                             y1 = children[i].children[j].parent.children[0].attrs['y'];
                         }
-                        
                     }
                 }
-                console.log("Parent co ordinates", x1, y1);
                 let x2 = 0;
                 let y2 = 0;
                 if(parent[1] == 'left'){
-                    console.log("left");
                     x2 = x1 - 120 ;
                     y2 = y1 + 100;
                 }
                 else{
-                    console.log("Going right");
                     x2 = x1 + 120;
-                    y2 = y1 + 100;
-                    
-                    
+                    y2 = y1 + 100;  
                 }
-                console.log("Adding cirlce with co ordinates", x1, y1, x2, y2);
+                let keys = Object.keys(this.coordinates);
+                for(let i=0; i<keys.length; i++){
+                    if(this.coordinates[keys[i]]['x'] == x2){
+                        if(parent[1] == 'left'){
+                            x2 = this.coordinates[keys[i]]['x'] + 30;
+                        }
+                        else{
+                            x2 = this.coordinates[keys[i]]['x']-30;
+                        }
+                    }
+                }
                 this.circles.push({x: x2, y: y2, id: Date.now(), text: this.bstNode});
+                this.coordinates[val] = {x: x2, y:y2};
                 let id = Date.now()+1;
                 //this.lineId = id;
                 this.drawningLine = true;
                 this.connections.push({
                     id: id,
                     points: [x1, y1, x2, y2]
-                });
-                
+                }); 
             }
+            this.bstNode = '';
+        },
+
+        inorder(){
+            this.showResult(this.root.inorder());
+        },
+        preorder(){
+            this.showResult(this.root.preorder());
+        },
+        postorder(){
+            this.showResult(this.root.postorder());
         },
         showGraphMenu(){
             this.clearGraph();
