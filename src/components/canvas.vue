@@ -8,22 +8,37 @@
 
         <b-collapse id="nav-collapse" is-nav>
             <b-navbar-nav>
-                <div>
-                    <b-form-input v-model="node" placeholder="Enter the node" :state="nodeState"> </b-form-input>
-                    <b-form-invalid-feedback id="input-live-feedback">
-                        Need a number or node exists with the number
-                    </b-form-invalid-feedback>
-                </div>
-                <b-nav-item href="#" @click="clickCircle" v-bind:active="tab == 0">Add Node </b-nav-item>
-                <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1" v-bind:active="tab == 1">Remove Node</b-nav-item>
-                <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1" v-bind:active="tab == 2">Move Node</b-nav-item>
-                <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2" v-bind:active="tab == 3">Add Edge</b-nav-item>
-                <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1" v-bind:active="tab == 4">Remove Edge</b-nav-item>
-                <b-nav-item href="#" @click="clearGraph" >Clear Graph</b-nav-item>
-                <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2" v-bind:active="tab == 5">DFS Rec</b-nav-item>
-                <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2" v-bind:active="tab == 6">DFS Stack</b-nav-item>
-                <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2" v-bind:active="tab == 7">BFS</b-nav-item>
-                <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2" v-bind:active="tab == 8">Shortest Path</b-nav-item>
+                <b-navbar-nav :hidden="showBST">    
+                    <div>
+                        <b-form-input v-model="node" placeholder="Enter the node" :state="nodeState"> </b-form-input>
+                        <b-form-invalid-feedback id="input-live-feedback">
+                            Need a number or node exists with the number
+                        </b-form-invalid-feedback>
+                    </div>    
+                     
+                    <b-nav-item href="#" @click="clickCircle" v-bind:active="tab == 0">Add Node </b-nav-item>
+                    <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1" v-bind:active="tab == 1">Remove Node</b-nav-item>
+                    <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1" v-bind:active="tab == 2">Move Node</b-nav-item>
+                    <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2" v-bind:active="tab == 3">Add Edge</b-nav-item>
+                    <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1" v-bind:active="tab == 4">Remove Edge</b-nav-item>
+                    <b-nav-item href="#" @click="clearGraph" >Clear Graph</b-nav-item>
+                    <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2" v-bind:active="tab == 5">DFS Rec</b-nav-item>
+                    <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2" v-bind:active="tab == 6">DFS Stack</b-nav-item>
+                    <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2" v-bind:active="tab == 7">BFS</b-nav-item>
+                    <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2" v-bind:active="tab == 8">Shortest Path</b-nav-item>
+                    <b-nav-item href="#" @click="bst" v-bind:active="tab == 8">Binary Search Tree</b-nav-item>
+                </b-navbar-nav>
+                <b-navbar-nav :hidden="!showBST">
+                    <div>
+                        <b-form-input v-model="bstNode" placeholder="Enter the node BST" :state="bstNodeState"> </b-form-input>
+                        <b-form-invalid-feedback id="input-live-feedback">
+                            Need a number or node exists with the number
+                        </b-form-invalid-feedback>
+                    </div>    
+                    <b-nav-item href="#" @click="addNodeToBst"> Add Node  </b-nav-item>
+                    <b-nav-item href="#" @click="showGraphMenu">Show Graph Menu </b-nav-item>
+
+                </b-navbar-nav>
                 <div :hidden="!showInput">
                     <b-form-input v-model="stackDfsStartNode" placeholder="Enter the DFS start node" :state="startNodeState" > </b-form-input>
                     <b-form-invalid-feedback id="input-live-feedback">
@@ -105,6 +120,7 @@ import lodash from 'lodash';
 import {Graph} from "../../algorithm/Graph";
 import {Stack} from "../../algorithm/Stack";
 import {Queue} from "../../algorithm/Queue";
+import {BinarySearchTree} from '../../algorithm/BinarySearchTree'
 export default {
     data(){
         return{
@@ -114,6 +130,8 @@ export default {
             },
             node: '',
             nodeState: null,
+            bstNode: '',
+            bstNodeState: null,
             startNodeState: null,
             circles: [],
             texts: [],
@@ -147,13 +165,82 @@ export default {
             updateCoordinates: [],
             lineId: null,
             edges: new Map(),
-            tab: null
+            tab: null,
+            showBST: null,
+            root: null
         }
     },
     mounted(){
         Konva.stages[0].getContainer().style.border = 'dashed black';
     },
     methods:{
+        addNodeToBst(){
+            if(!this.bstNode){
+                this.bstNodeState = false;
+                return;
+            }
+            let val = parseInt(this.bstNode);
+            if(!this.root){
+                this.root = new BinarySearchTree(val);
+                let x = window.innerWidth/2;
+                let y = window.innerHeight/2-400;
+                this.circles.push({x: x, y: y, id: Date.now(), text: this.bstNode});
+            }
+            else{
+                let parent = this.root.getParent(val);
+                
+                this.root.insert(val);
+                console.log("parent", parent, this.root);
+                const children = Konva.stages[0].children[0].children;
+                console.log("All", children)
+                let x1= 0;
+                let y1 = 0;
+                for(let i=0; i<children.length;i++){
+                    console.log("Group ", children[i]);
+                    for(let j=0; j<children[i].children.length; j++){
+                        if(children[i].children[j] instanceof Konva.Text && children[i].children[j].attrs['text'] == parent[0]){
+                            console.log("Members: ", children[i].children[j]);
+                            x1 = children[i].children[j].parent.children[0].attrs['x'];
+                            y1 = children[i].children[j].parent.children[0].attrs['y'];
+                        }
+                        
+                    }
+                }
+                console.log("Parent co ordinates", x1, y1);
+                let x2 = 0;
+                let y2 = 0;
+                if(parent[1] == 'left'){
+                    console.log("left");
+                    x2 = x1 - 120 ;
+                    y2 = y1 + 100;
+                }
+                else{
+                    console.log("Going right");
+                    x2 = x1 + 120;
+                    y2 = y1 + 100;
+                    
+                    
+                }
+                console.log("Adding cirlce with co ordinates", x1, y1, x2, y2);
+                this.circles.push({x: x2, y: y2, id: Date.now(), text: this.bstNode});
+                let id = Date.now()+1;
+                //this.lineId = id;
+                this.drawningLine = true;
+                this.connections.push({
+                    id: id,
+                    points: [x1, y1, x2, y2]
+                });
+                
+            }
+        },
+        showGraphMenu(){
+            this.clearGraph();
+            this.showBST = false;
+        },
+        bst(){
+            this.clearGraph();
+            this.showBST = true;
+        },
         shortestPath(){
             this.showShortestPath = true;
             this.showInput = false;
@@ -371,6 +458,7 @@ export default {
             this.nodeState = null;
             
             this.groupConfig.draggable = true;
+            
             let x = window.innerWidth * Math.random();
             let y = (window.innerHeight -300) * Math.random();
             this.circles.push({x: x, y: y, id: Date.now(), text: this.node});
@@ -444,7 +532,7 @@ export default {
                 }
                 this.forceUpdate();
             }
-            else{
+            else if(!this.showBST){
                 if(!(e.target instanceof Konva.Circle)){
                     return;
                 }
@@ -478,7 +566,7 @@ export default {
             lastLine.points = [lastLine.points[0], lastLine.points[1], pos.x, pos.y];
         },
         handleMouseUp(e) {
-            if(!this.deleteNode && !this.deleteEdge){
+            if(!this.deleteNode && !this.deleteEdge && !this.showBST){
                 if(!(e.target instanceof Konva.Circle)){
                     this.connections = lodash.filter(this.connections,(line) => {
                         if(line.id != this.lineId){
