@@ -115,6 +115,25 @@
             </b-col>
         </b-row>
     </b-container>
+    <b-container class="center" fluid="true">
+        <b-row>  
+            <b-col cols="4">
+                <b-list-group v-for="res in preorderRes" :key="'C' + res">
+                    <b-list-group-item variant="dark"> Preorder: {{res}}</b-list-group-item>
+                </b-list-group>
+            </b-col>
+            <b-col cols="4">
+                <b-list-group v-for="res in inorderRes" :key="'A' + res">
+                    <b-list-group-item variant="dark"> Inorder: {{res}}</b-list-group-item>
+                </b-list-group>
+            </b-col>
+            <b-col cols="4">
+                <b-list-group v-for="res in postorderRes" :key="'B' + res">
+                    <b-list-group-item variant="dark"> Postorder: {{res}}</b-list-group-item>
+                </b-list-group>
+            </b-col>
+        </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -150,6 +169,9 @@ export default {
             showStartNodeInput : true,
             resRecDfs : [],
             resStackDfs: [],
+            preorderRes: [],
+            inorderRes: [],
+            postorderRes: [],
             resBfs: [],
             showInput: null,
             stackDfsStartNode: null,
@@ -241,13 +263,16 @@ export default {
         },
 
         inorder(){
-            this.showResult(this.root.inorder());
+            this.inorderRes = this.root.inorder();
+            this.showResult(this.inorderRes);
         },
         preorder(){
-            this.showResult(this.root.preorder());
+            this.preorderRes = this.root.preorder();
+            this.showResult(this.preorderRes);
         },
         postorder(){
-            this.showResult(this.root.postorder());
+            this.postorderRes = this.root.postorder();
+            this.showResult(this.postorderRes);
         },
         showGraphMenu(){
             this.clearGraph();
