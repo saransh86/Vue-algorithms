@@ -1,0 +1,52 @@
+---
+resources:
+- name: repo
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/saransh86/Vue-algorithms.git
+    branch: master
+
+- name: node-image
+  type: registry-image
+  source:
+    repository: node
+    tag: 12.22
+
+jobs:
+- name: Graph
+  public: true
+  plan:
+  - get: node-image
+  - get: repo
+    trigger: true
+  - task: install
+    image: node-image
+    config:
+      inputs:
+      - name: repo
+      outputs:
+      - name: dependencies
+        path: repo/node_modules
+      platform: linux
+      run:
+        path: npm
+        args: ["install", "--silent"]
+        dir: repo
+  - task: deploy
+    privileged: true
+    image: node-image
+    config:
+      inputs:
+      - name: repo
+      - name: dependencies
+        path: repo/node_modules
+      platform: linux
+      run:
+        path: /bin/bash
+        args:
+          - -c
+          - |
+            chmod +x prod.sh
+            ./prod.sh -a access_key -s secret_key
+        dir: repo

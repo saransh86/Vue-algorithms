@@ -7,7 +7,7 @@ check_aws_install() {
         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
         unzip awscliv2.zip
         rm -rf awscliv2.zip
-        sudo ./aws/install
+        ./aws/install
     else
         echo "Good job! AWS installed!"
     fi 
@@ -16,7 +16,7 @@ check_aws_install() {
 check_curl_install() {
     if [ "$(which curl | cut -c 1)" != "/" ]; then
         echo "Curl not installed...installing"
-        sudo apt-get install curl -y
+        apt-get install curl -y
     else
         echo "Curl installed...skipping"
     fi
@@ -25,7 +25,7 @@ check_curl_install() {
 check_unzip_install() {
     if [ "$(which unzip | cut -c 1)" != "/" ]; then
         echo "Unzip not installed..installing"
-        sudo apt-get install unzip -y
+        apt-get install unzip -y
     else
         echo "Unzip installed...skipping"
     fi
@@ -45,10 +45,10 @@ check_node_install(){
    
     if [ "$(which node | cut -c 1)" != "/" ]; then
         echo "node not installed..installing"
-        sudo apt-get update
-        sudo apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
-        sudo apt-get install nodejs -y
-        sudo apt-get install npm -y
+        apt-get update
+        apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
+        apt-get install nodejs -y
+        apt-get install npm -y
     else
         echo "Node installed...skipping"
     fi
