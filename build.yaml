@@ -5,7 +5,7 @@ resources:
   icon: github
   source:
     uri: https://github.com/saransh86/Vue-algorithms.git
-    branch: master
+    branch: CI
 
 - name: node-image
   type: registry-image

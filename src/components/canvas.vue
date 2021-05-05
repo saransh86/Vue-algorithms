@@ -2,7 +2,7 @@
   <div>
     <b-navbar toggleable="lg" type="dark" variant="dark">
         <b-navbar-nav>
-        <b-navbar-brand href="#">Simple Graph</b-navbar-brand>
+        <b-navbar-brand href="#">Simple Graph Parina!</b-navbar-brand>
 
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
