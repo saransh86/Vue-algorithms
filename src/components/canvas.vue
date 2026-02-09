@@ -1,77 +1,52 @@
 <template>
   <div>
-    <b-navbar toggleable="lg" type="dark" variant="dark">
-        <b-navbar-nav>
-        <b-navbar-brand href="#">Simple Graph</b-navbar-brand>
-
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-
-        <b-collapse id="nav-collapse" is-nav>
-            <b-navbar-nav>
-                <b-navbar-nav :hidden="showBST">    
-                    <div>
-                        <b-form-input v-model="node" placeholder="Enter the node" :state="nodeState"> </b-form-input>
-                        <b-form-invalid-feedback id="input-live-feedback">
-                            Need a number or node exists with the number
-                        </b-form-invalid-feedback>
-                    </div>    
-                     
-                    <b-nav-item href="#" @click="clickCircle" v-bind:active="tab == 0">Add Node </b-nav-item>
-                    <b-nav-item href="#" @click="removeNode" :disabled="circles.length<1" v-bind:active="tab == 1">Remove Node</b-nav-item>
-                    <b-nav-item href="#" @click="moveNode" :disabled="circles.length<1" v-bind:active="tab == 2">Move Node</b-nav-item>
-                    <b-nav-item href="#" @click="addEdge" :disabled="circles.length<2" v-bind:active="tab == 3">Add Edge</b-nav-item>
-                    <b-nav-item href="#" @click="removeEdge" :disabled="connections.length<1" v-bind:active="tab == 4">Remove Edge</b-nav-item>
-                    <b-nav-item href="#" @click="clearGraph" >Clear Graph</b-nav-item>
-                    <b-nav-item href="#" @click="runRecDfs" :disabled="circles.length<2" v-bind:active="tab == 5">DFS Rec</b-nav-item>
-                    <b-nav-item href="#" @click="showInputBox" :disabled="circles.length<2" v-bind:active="tab == 6">DFS Stack</b-nav-item>
-                    <b-nav-item href="#" @click="showBfsInputBox" :disabled="circles.length<2" v-bind:active="tab == 7">BFS</b-nav-item>
-                    <b-nav-item href="#" @click="shortestPath" :disabled="circles.length<2" v-bind:active="tab == 8">Shortest Path</b-nav-item>
-                    <b-nav-item href="#" @click="bst" v-bind:active="tab == 8">Binary Search Tree</b-nav-item>
-                </b-navbar-nav>
-                <b-navbar-nav :hidden="!showBST">
-                    <div>
-                        <b-form-input v-model="bstNode" placeholder="Enter the node BST" :state="bstNodeState"> </b-form-input>
-                        <b-form-invalid-feedback id="input-live-feedback">
-                            Need a number or node exists with the number
-                        </b-form-invalid-feedback>
-                    </div>    
-                    <b-nav-item href="#" @click="addNodeToBst"> Add Node  </b-nav-item>
-                    <b-nav-item href="#" @click="inorder" :disabled="!root"> Inorder  </b-nav-item>
-                    <b-nav-item href="#" @click="preorder" :disabled="!root"> Preorder </b-nav-item>
-                    <b-nav-item href="#" @click="postorder" :disabled="!root"> Postorder</b-nav-item>
-                    <b-nav-item href="#" @click="clearGraph"> Clear Tree  </b-nav-item>
-                    <b-nav-item href="#" @click="showGraphMenu">Show Graph Menu </b-nav-item>
-
-                </b-navbar-nav>
-                <div :hidden="!showInput">
-                    <b-form-input v-model="stackDfsStartNode" placeholder="Enter the DFS start node" :state="startNodeState" > </b-form-input>
-                    <b-form-invalid-feedback id="input-live-feedback">
-                        Need a node number or number not in nodes
-                    </b-form-invalid-feedback>               
-                </div>
-                 <b-nav-item variant="dark" @click="runStackDfs" :hidden="!showInput">Run</b-nav-item>
-                <div :hidden="!showBfsInput">
-                    <b-form-input v-model="startBfsStartNode" placeholder="Enter the BFS start node" :state="startBfsNodeState" > </b-form-input>
-                    <b-form-invalid-feedback id="input-live-feedback">
-                        Need a node number or number not in nodes
-                    </b-form-invalid-feedback>
-                </div>
-                <b-nav-item variant="dark" @click="runBfs" :hidden="!showBfsInput">Run</b-nav-item>
-                <div :hidden="!showShortestPath">
-                    <b-form-input v-model="startNode" placeholder="Enter start node" :state="startState" > </b-form-input>
-                    <b-form-invalid-feedback id="input-live-feedback">
-                        Need a node number or number not in nodes
-                    </b-form-invalid-feedback>
-                    <b-form-input v-model="destNode" placeholder="Enter destination node" :state="destState" > </b-form-input>
-                     <b-form-invalid-feedback id="input-live-feedback">
-                        Need a node number or number not in nodes
-                    </b-form-invalid-feedback>
-                </div>
-                <b-nav-item variant="dark" @click="runShortestPath" :hidden="!showShortestPath">Run</b-nav-item>
-            </b-navbar-nav>
-        </b-collapse>
-        </b-navbar-nav>
-    </b-navbar>
+    <GraphControls
+      :node="node"
+      :nodeState="nodeState"
+      :bstNode="bstNode"
+      :bstNodeState="bstNodeState"
+      :stackDfsStartNode="stackDfsStartNode"
+      :startNodeState="startNodeState"
+      :startBfsStartNode="startBfsStartNode"
+      :startBfsNodeState="startBfsNodeState"
+      :startNode="startNode"
+      :startState="startState"
+      :destNode="destNode"
+      :destState="destState"
+      :showInput="showInput"
+      :showBfsInput="showBfsInput"
+      :showShortestPath="showShortestPath"
+      :showBST="showBST"
+      :root="root"
+      :circlesLength="circles.length"
+      :connectionsLength="connections.length"
+      :tab="tab"
+      @update:node="node = $event"
+      @update:bstNode="bstNode = $event"
+      @update:stackDfsStartNode="stackDfsStartNode = $event"
+      @update:startBfsStartNode="startBfsStartNode = $event"
+      @update:startNode="startNode = $event"
+      @update:destNode="destNode = $event"
+      @click-circle="clickCircle"
+      @remove-node="removeNode"
+      @move-node="moveNode"
+      @add-edge="addEdge"
+      @remove-edge="removeEdge"
+      @clear-graph="clearGraph"
+      @run-rec-dfs="runRecDfs"
+      @show-input-box="showInputBox"
+      @show-bfs-input-box="showBfsInputBox"
+      @shortest-path="shortestPath"
+      @bst="bst"
+      @add-node-to-bst="addNodeToBst"
+      @inorder="inorder"
+      @preorder="preorder"
+      @postorder="postorder"
+      @show-graph-menu="showGraphMenu"
+      @run-stack-dfs="runStackDfs"
+      @run-bfs="runBfs"
+      @run-shortest-path="runShortestPath"
+    />
    
     <v-stage :config="configKonva" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @mousemove="handleMouseMove" @dragstart="dragMove" @dragend="dragEnd"> 
         <v-layer> 
@@ -140,11 +115,15 @@
 <script>
 import Konva from "konva";
 import lodash from 'lodash';
+import GraphControls from './GraphControls.vue';
 import {Graph} from "../../algorithm/Graph";
-import {Stack} from "../../algorithm/Stack";
-import {Queue} from "../../algorithm/Queue";
 import {BinarySearchTree} from '../../algorithm/BinarySearchTree'
+import {bfs, dfsRecursive, dfsStack, shortestPath} from '../graph/algorithms';
+import {isValidNode} from '../graph/validators';
 export default {
+    components: {
+        GraphControls
+    },
     data(){
         return{
             configKonva: {
@@ -349,79 +328,38 @@ export default {
         async runBfs(){
             this.tab = 7;
             this.resBfs = [];
-            if(!this.startBfsStartNode || !this.nodes.includes(this.startBfsStartNode)){
+            if(!isValidNode(this.startBfsStartNode, this.nodes)){
                 this.startBfsNodeState = false;
                 return;
             }
             this.showBfsInput = false;
             this.startBfsNodeState = null;
-            let dis = [];
-            let list = this.graph.getAdjacencyList();
-            for(let key of list.keys()){
-                dis[key] = false;
-            }
-            let queue = new Queue();
-            queue.enQ(this.startBfsStartNode);
-            dis[this.startBfsStartNode] = true;
+            this.resBfs = bfs(this.graph.getAdjacencyList(), this.startBfsStartNode);
             this.startBfsStartNode = null;
-            while(!queue.isQueueEmpty()){
-                let v = queue.deQ();
-                let temp = list.get(v);
-                this.resBfs.push(v);
-                
-                while(temp){
-                    if(!dis[temp.val]){
-                        dis[temp.val] = true;
-                        queue.enQ(temp.val);
-                    }
-                    temp = temp.next;
-                }
-            }
-           
             this.showResult(this.resBfs);
         },
         runShortestPath(){
             this.tab = 8;
             this.resShortestPath = [];
-            if((!this.startNode || !this.nodes.includes(this.startNode))){
+            if(!isValidNode(this.startNode, this.nodes)){
                 this.startState = false;
                 return;
             }
             this.startState = null;
-            if(( !this.destNode || !this.nodes.includes(this.destNode))){
+            if(!isValidNode(this.destNode, this.nodes)){
                 this.destState = false;
                 return;
             }
             
             this.destState = null;
             this.showShortestPath = false;
-            let dis = [];
-            let path = new Map();
-            let list = this.graph.getAdjacencyList();
-            for(let key of list.keys()){
-                dis[key] = false;
+            let res = shortestPath(this.graph.getAdjacencyList(), this.startNode, this.destNode);
+            if(!res.reachable){
+                this.destState = false;
+                this.showShortestPath = true;
+                return;
             }
-            let queue = new Queue();
-            queue.enQ(this.startNode);
-            dis[this.startNode] = true;
-            
-            while(!queue.isQueueEmpty()){
-                let v = queue.deQ();
-                let temp = list.get(v);
-                while(temp){
-                    if(!dis[temp.val]){
-                        path.set(temp.val, v);
-                        dis[temp.val] = true;
-                        queue.enQ(temp.val);
-                    }
-                    temp = temp.next;
-                }
-            }
-            this.resShortestPath.push(this.startNode);
-            while(this.destNode != this.startNode){
-                this.resShortestPath.splice(1,0,this.destNode);
-                this.destNode = path.get(this.destNode);
-            }
+            this.resShortestPath = res.path;
             this.startNode = null;
             this.destNode = null;
             this.showResult(this.resShortestPath);
@@ -429,39 +367,19 @@ export default {
         async runStackDfs(){
             this.tab = 6;
             this.resStackDfs = [];
-            if(!this.stackDfsStartNode || !this.nodes.includes(this.stackDfsStartNode)){
+            if(!isValidNode(this.stackDfsStartNode, this.nodes)){
                 this.startNodeState = false;
                 return;
             }
             this.showInput = false;
-            let stack = new Stack();
-            stack.push(this.stackDfsStartNode);
-            this.stackDfsStartNode = null;
             this.startNodeState = null;
-            let dis = [];
-            let list = this.graph.getAdjacencyList();
-            for(let key of list.keys()){
-                dis[key] = false;
-            }
-            while(!stack.isStackEmpty()){
-                let v = stack.pop();
-                let temp = list.get(v);
-        
-                if(!dis[v]){
-                    this.resStackDfs.push(v);
-                    dis[v] = true;
-                    while(temp){
-                        stack.push(temp.val);
-                        temp = temp.next;
-                    }
-                }
-            }
+            this.resStackDfs = dfsStack(this.graph.getAdjacencyList(), this.stackDfsStartNode);
+            this.stackDfsStartNode = null;
             this.showResult(this.resStackDfs);
         },
         async runRecDfs(){
             this.tab = 5;
-            this.graph.recursiveDfs();
-            this.resRecDfs = this.graph.getResult();
+            this.resRecDfs = dfsRecursive(this.graph);
             this.showResult(this.resRecDfs);
         },
         dragMove(e){
